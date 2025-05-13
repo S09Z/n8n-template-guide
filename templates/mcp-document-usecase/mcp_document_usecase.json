@@ -1,0 +1,367 @@
+{
+  "name": "mcp-document-usecase",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "e9187cdd-4b31-4a80-b0b6-c7bde73a2a06",
+        "options": {}
+      },
+      "id": "bcd3026c-b56f-4b50-b5c7-e3a9e7dbe163",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        280,
+        -100
+      ],
+      "alwaysOutputData": true,
+      "webhookId": "e9187cdd-4b31-4a80-b0b6-c7bde73a2a06"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\"inputs\": \"={{$json[\"text\"]}}\"}"
+      },
+      "id": "32893c09-0907-47d9-9181-6ca2e19654cc",
+      "name": "Summarizer API Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        680,
+        -200
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://api-inference.huggingface.co/models/tiiuae/falcon-7b",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\"inputs\": \"={{$json[\"text\"]}}\"}"
+      },
+      "id": "7fc6c5aa-a379-410a-b1a3-df4db19f4f3a",
+      "name": "Email Writer API Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        680,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "functionCode": "if ($json['intent'] === 'summarize') {\n  return {json: {result: $json[\"text\"]}};\n}\nelse if ($json['intent'] === 'email') {\n  return {json: {result: \"Email written successfully\"}};\n}\nelse {\n  return {json: {result: \"Unrecognized intent\"}};\n}"
+      },
+      "id": "a98aedad-f941-4a44-a5d8-daee3510b462",
+      "name": "Intent Detection and Routing",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -100
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "functionCode": "return {json: {output: \"{{ $json[\"result\"] }}\"}};"
+      },
+      "id": "22a037d3-6216-466f-ac7c-c261d94eb949",
+      "name": "Response Aggregator",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        940,
+        -100
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "ittichai71000@gmail.com",
+        "toEmail": "i.boonyarakthunya@gmail.com",
+        "subject": "Test Email from n8n",
+        "text": "={{$json[\"output\"]}}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "b9c0cca4-9427-41bf-9148-8a0e6ae78341",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        -100
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "smtp": {
+          "id": "IbRj4gNpQMshlEdO",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"output\": \"Hello My AI\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        -340
+      ],
+      "id": "7308aed2-0d58-4600-9083-7eb62cd06e62",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -340
+      ],
+      "id": "0908b7ce-c3cc-4ed2-91e5-33a2a8f9d687",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        -320
+      ],
+      "id": "7d17df03-3c04-4fe8-bb6f-7b0fc7fb54d0",
+      "name": "Discord",
+      "webhookId": "a32c01c4-0651-4cdf-a9a2-78a311791125"
+    },
+    {
+      "parameters": {
+        "chatId": "8060013557",
+        "text": "test",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1580,
+        -320
+      ],
+      "id": "63633719-d05f-4a5f-bd50-59b9a9a88caf",
+      "name": "Telegram",
+      "webhookId": "019860f7-7832-4102-a4e8-34df9cc409d9",
+      "credentials": {
+        "telegramApi": {
+          "id": "mUPgtTDzUkxnTuVR",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1500,
+        60
+      ],
+      "id": "6345e443-b6d3-497d-bdf7-7842bac391e2",
+      "name": "Google Drive"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1720,
+        60
+      ],
+      "id": "7141ce88-9bcf-47f0-af4b-357873c4768d",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        120
+      ],
+      "id": "c66005f4-761b-495c-a7e9-a2d303828a3c",
+      "name": "Code"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -300
+      ],
+      "id": "185381af-bbfe-49a2-94bf-6689f0bd9346",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Intent Detection and Routing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intent Detection and Routing": {
+      "main": [
+        [
+          {
+            "node": "Summarizer API Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email Writer API Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarizer API Request": {
+      "main": [
+        [
+          {
+            "node": "Response Aggregator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Writer API Request": {
+      "main": [
+        [
+          {
+            "node": "Response Aggregator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response Aggregator": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        []
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord": {
+      "main": [
+        []
+      ]
+    },
+    "Telegram": {
+      "main": [
+        []
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8efea247-a61f-423f-ae5d-5d520d0687fe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ce52962f13fb6d9794b487fbb8dbab2377a19388ad65f5a80b179004939fbf56"
+  },
+  "id": "8IcGjZXGPWv6pAKn",
+  "tags": [
+    {
+      "name": "AI",
+      "id": "xJSNFwPIsasDEZnY",
+      "createdAt": "2025-05-13T08:02:11.865Z",
+      "updatedAt": "2025-05-13T08:02:11.865Z"
+    }
+  ]
+}
